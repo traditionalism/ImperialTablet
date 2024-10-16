@@ -35,11 +35,11 @@ after_build:
     copy fxmanifest.lua build\ImperialTablet\fxmanifest.lua
 
 
-    cd build\ImperialTablet\ && 7z a "..\..\ImperialTablet\ImperialTablet-%APPVEYOR_BUILD_ID%.zip" -r * && cd ..\..\ImperialTablet\
+    cd build\ImperialTablet\ && 7z a "..\..\ImperialTablet\ImperialTablet.zip" -r * && cd ..\..\ImperialTablet\
 
 
 
-    appveyor PushArtifact ImperialTablet-%APPVEYOR_BUILD_ID%.zip
+    appveyor PushArtifact ImperialTablet.zip
 
 deploy:
 
