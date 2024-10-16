@@ -1,0 +1,60 @@
+version: 1.0.{build}
+
+pull_requests:
+
+  do_not_increment_build_number: true
+
+skip_non_tags: true
+
+configuration: Release
+
+before_build:
+
+- cmd: dotnet restore
+
+build:
+
+  project: ImperialTablet.sln
+
+  publish_nuget: true
+
+  include_nuget_references: true
+
+  parallel: true
+
+  verbosity: minimal
+
+after_build:
+
+- cmd: >-
+
+    copy README.md build\ImperialTablet\README.md
+
+
+
+    copy fxmanifest.lua build\ImperialTablet\fxmanifest.lua
+
+
+    cd build\ImperialTablet\ && 7z a "..\..\ImperialTablet\ImperialTablet-%APPVEYOR_BUILD_ID%.zip" -r * && cd ..\..\ImperialTablet\
+
+
+
+    appveyor PushArtifact ImperialTablet-%APPVEYOR_BUILD_ID%.zip
+
+deploy:
+
+- provider: GitHub
+
+  tag: $(appveyor_build_version)
+
+  release: '[Release] ImperialTablet-v$(appveyor_build_version)'
+
+  description: ImperialTablet version v$(appveyor_build_version)
+
+  auth_token:
+
+    secure: Hw8d95jOk9+v5QZDK3UbueRKyvYMyht+W5r38JVngeqMB4sC+7V8cRwmGwu7rJbp
+
+  on:
+
+    APPVEYOR_REPO_TAG: true

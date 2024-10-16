@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imperial CAD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+        }
+
+        .monitor {
+            width: 1600px;
+            height: 800px;
+            background-color: #000;
+            border: 15px solid #444;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .tab-buttons {
+            display: flex;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            margin-bottom: 10px;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-buttons.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .tab-buttons button {
+            background: linear-gradient(135deg, #555, #444);
+            color: white;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 0 5px;
+            font: 16px 'Inter', sans-serif;
+        }
+
+        .tab-buttons button:hover {
+            background: linear-gradient(135deg, #777, #666);
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .tab-buttons button.active {
+            background-color: #222;
+            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.1);
+        }
+
+        #forms-button {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="monitor">
+        <div class="tab-buttons">
+            <button class="tab-button" data-url="https://imperialcad.app/home/{communityId}">Imperial
+                CAD</button>
+            <button id="forms-button" class="tab-button"
+                data-url="https://imperialcad.app/forms/{communityId}">Forms</button>
+        </div>
+        <iframe class="screen" src="https://imperialcad.app"
+            sandbox="allow-popups allow-scripts allow-same-origin allow-forms allow-modals allow-presentation"></iframe>
+    </div>
+    <script>
+        let communityId;
+        let lastScrollTop = 0;
+        let buttonsHidden = false;
+        let lastMdcPage = null;
+
+        // Function to switch iframe source and replace {communityId} in the URL
+        function loadIframe(url) {
+            const iframe = document.querySelector('.screen');
+            if (communityId) {
+                url = url.replace('{communityId}', communityId);
+            }
+            iframe.src = url;
+        }
+
+        // Automatically load the main page with the correct communityId
+        function loadMainPage() {
+            const mainPageUrl = "https://imperialcad.app/home/{communityId}";
+            loadIframe(mainPageUrl);
+        }
+
+        // Monitor the iframe URL changes to track MDC pages and update Forms button
+        function monitorIframeUrlChange() {
+            const iframe = document.querySelector('.screen');
+            iframe.addEventListener('load', function () {
+                const iframeUrl = iframe.contentWindow.location.href;
+
+                if (iframeUrl.includes("leomdc")) {
+                    document.getElementById('forms-button').style.display = 'inline-block';
+                    lastMdcPage = "leomdc";
+                } else if (iframeUrl.includes("mdcfire")) {
+                    document.getElementById('forms-button').style.display = 'inline-block';
+                    lastMdcPage = "mdcfire";
+                } else {
+                    document.getElementById('forms-button').style.display = 'none';
+                    lastMdcPage = null;
+                }
+            });
+        }
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function () {
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const iframeUrl = document.querySelector('.screen').contentWindow.location.href;
+
+                if (this.getAttribute('data-url').includes("home")) {
+                    if (iframeUrl.includes("forms") && lastMdcPage) {
+                        loadIframe(`https://imperialcad.app/${lastMdcPage}/{communityId}`);
+                    } else {
+                        loadIframe(this.getAttribute('data-url'));
+                    }
+                } else {
+                    loadIframe(this.getAttribute('data-url'));
+                }
+            });
+        });
+
+        window.addEventListener('message', function (event) {
+            if (event.data.type === 'DISPLAY_TABLET') {
+                document.body.style.display = 'flex';
+            } else if (event.data.type === 'HIDE_TABLET') {
+                document.body.style.display = 'none';
+            } else if (event.data.type === 'SET_COMMUNITY_ID') {
+                communityId = event.data.communityId;
+                loadMainPage();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Escape") {
+                document.body.style.display = 'none';
+                fetch(`https://${GetParentResourceName()}/closeTablet`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+            }
+        });
+
+        monitorIframeUrlChange();
+
+        // Handle hiding/showing tab buttons on iframe scroll
+        setInterval(() => {
+            const iframeWindow = document.querySelector('.screen').contentWindow;
+            if (!iframeWindow) return;
+
+            try {
+                const currentScrollTop = iframeWindow.scrollY;
+
+                if (currentScrollTop > lastScrollTop && !buttonsHidden) {
+                    document.querySelector('.tab-buttons').classList.add('hidden');
+                    buttonsHidden = true;
+                } else if (currentScrollTop < lastScrollTop && buttonsHidden) {
+                    document.querySelector('.tab-buttons').classList.remove('hidden');
+                    buttonsHidden = false;
+                }
+                lastScrollTop = currentScrollTop;
+            } catch (e) {
+                console.error("Error accessing iframe scroll position:", e);
+            }
+        }, 100);
+    </script>
+</body>
+
+</html>

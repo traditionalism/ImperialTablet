@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImperialTablet.Client", "Client\ImperialTablet.Client.csproj", "{EAC420EA-2DA7-401E-9A80-3ABF43B5C6EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EAC420EA-2DA7-401E-9A80-3ABF43B5C6EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAC420EA-2DA7-401E-9A80-3ABF43B5C6EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAC420EA-2DA7-401E-9A80-3ABF43B5C6EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAC420EA-2DA7-401E-9A80-3ABF43B5C6EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {07F1D650-0FA3-4473-A030-9110F4980340}
+	EndGlobalSection
+EndGlobal
